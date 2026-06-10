@@ -1,11 +1,17 @@
 <div class="h-screen w-full relative flex items-center p-6 md:p-10">
     
     <!-- Sidebar Component -->
-    <div class="flex items-center">
-        <app-sidebar [userInitials]="'JD'"></app-sidebar>
+    <div class="flex items-center z-10">
+        <app-sidebar [userInitials]="'JD'" [activeView]="currentView" (onMenuSelect)="changeView($event)"></app-sidebar>
     </div>
     
-    <!-- Aquí iría dinámicamente el contenedor derecho en el futuro -->
-    <div class="flex-grow"></div>
+    <!-- Contenedor Principal Dinámico -->
+    <div class="flex-grow h-full ml-6 overflow-hidden">
+        <app-tv-view *ngIf="currentView === 'tv'" class="w-full h-full block"></app-tv-view>
+        
+        <div *ngIf="currentView === 'home'" class="w-full h-full flex items-center justify-center text-white/50 text-2xl font-light tracking-wider animate-fade-in">
+            Selecciona una opción en el menú
+        </div>
+    </div>
     
 </div>

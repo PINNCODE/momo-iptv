@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -9,7 +9,9 @@ import { CommonModule } from '@angular/common';
 })
 export class SidebarComponent {
   // Input para poder cambiar las iniciales del usuario desde el componente padre
-  @Input() userInitials: string = 'JD';
+  @Input() userInitials: string = 'U';
+  @Input() activeView: string = 'home';
+  @Output() onMenuSelect = new EventEmitter<string>();
 
   isProfileOpen: boolean = false;
 
@@ -32,5 +34,9 @@ export class SidebarComponent {
 
   toggleProfile() {
     this.isProfileOpen = !this.isProfileOpen;
+  }
+
+  selectMenu(view: string) {
+    this.onMenuSelect.emit(view);
   }
 }
