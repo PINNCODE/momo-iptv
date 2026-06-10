@@ -1,0 +1,84 @@
+<div class="min-h-screen w-full flex items-center justify-center p-4 relative overflow-hidden">
+
+
+    <!-- Main Glass Container -->
+    <div class="relative z-10 w-full max-w-5xl grid grid-cols-1 md:grid-cols-2 gap-8 p-8 md:p-12 rounded-[2.5rem] bg-white/40 dark:bg-black/20 backdrop-blur-2xl border border-white/50 dark:border-white/10 shadow-[0_8px_32px_0_rgba(0,0,0,0.1)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] transform-gpu">
+        
+        <!-- Form Section -->
+        <div class="flex flex-col justify-center space-y-6">
+            <div class="text-center md:text-left">
+                <h1 class="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight mb-2">Bienvenido</h1>
+                <h2 class="text-lg text-gray-600 dark:text-gray-300 font-medium">Inicia sesión en tu cuenta</h2>
+            </div>
+            
+            <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-4 mt-8">
+                
+                <!-- URL del Servidor -->
+                <div>
+                    <app-glass-input
+                        type="url"
+                        label="URL del servidor"
+                        formControlName="serverUrl"
+                        inputId="serverUrl">
+                    </app-glass-input>
+                    <div *ngIf="loginForm.get('serverUrl')?.touched && loginForm.get('serverUrl')?.invalid" class="px-2 -mt-2 mb-2 text-xs text-red-500 dark:text-red-400 font-medium animate-pulse">
+                        <span *ngIf="loginForm.get('serverUrl')?.errors?.['required']">La URL del servidor es obligatoria.</span>
+                        <span *ngIf="loginForm.get('serverUrl')?.errors?.['pattern']">Debe ser una URL válida (ej. http://dominio.com).</span>
+                    </div>
+                </div>
+                
+                <!-- Usuario -->
+                <div>
+                    <app-glass-input
+                        type="text"
+                        label="Usuario"
+                        formControlName="username"
+                        inputId="username">
+                    </app-glass-input>
+                    <div *ngIf="loginForm.get('username')?.touched && loginForm.get('username')?.invalid" class="px-2 -mt-2 mb-2 text-xs text-red-500 dark:text-red-400 font-medium animate-pulse">
+                        <span *ngIf="loginForm.get('username')?.errors?.['required']">El usuario es obligatorio.</span>
+                    </div>
+                </div>
+                
+                <!-- Contraseña -->
+                <div>
+                    <app-glass-input
+                        type="password"
+                        label="Contraseña"
+                        formControlName="password"
+                        inputId="password">
+                    </app-glass-input>
+                    <div *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.invalid" class="px-2 -mt-2 mb-2 text-xs text-red-500 dark:text-red-400 font-medium animate-pulse">
+                        <span *ngIf="loginForm.get('password')?.errors?.['required']">La contraseña es obligatoria.</span>
+                    </div>
+                </div>
+                
+                <div class="pt-2">
+                    <app-glass-button type="submit" [disabled]="loginForm.invalid">
+                        Iniciar sesión
+                    </app-glass-button>
+                </div>
+            </form>
+        </div>
+
+        <!-- QR Section -->
+        <div class="hidden md:flex flex-col items-center justify-center p-8 rounded-3xl bg-white/30 dark:bg-white/5 border border-white/40 dark:border-white/10 shadow-inner relative overflow-hidden group">
+            <!-- Subtle glow effect inside QR container -->
+            <div class="absolute inset-0 bg-gradient-to-br from-white/30 dark:from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
+            
+            <h1 class="text-2xl font-bold text-center text-gray-900 dark:text-white mb-8 relative z-10">Escanea el código QR</h1>
+            
+            <!-- Dummy QR Code Container (Glassy square) -->
+            <div class="relative z-10 w-48 h-48 rounded-2xl bg-white/50 dark:bg-white/10 backdrop-blur-md border border-white/60 dark:border-white/20 shadow-lg flex items-center justify-center p-6 transform hover:scale-105 transition-transform duration-500">
+                <!-- SVG placeholder for QR -->
+                <svg class="w-full h-full text-gray-800 dark:text-white/80" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M3 3h8v8H3zm2 2v4h4V5zm8-2h8v8h-8zm2 2v4h4V5zM3 13h8v8H3zm2 2v4h4v-4zm13-2h3v2h-3zm-3 0h2v2h-2zm3 3h3v2h-3zm-2 3h2v2h-2zm-3-3h2v2h-2zm0 3h2v2h-2zm-3-3h2v2h-2zm0 3h2v2h-2z" />
+                </svg>
+            </div>
+            
+            <p class="mt-8 text-sm text-center text-gray-700 dark:text-gray-300 leading-relaxed relative z-10 max-w-xs">
+                Serás redireccionado hacia un formulario para iniciar sesión desde tu dispositivo móvil
+            </p>
+        </div>
+    </div>
+</div>
