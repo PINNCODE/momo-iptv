@@ -126,6 +126,7 @@ export class Dashboard implements OnInit, OnDestroy {
 
   confirmLogout() {
     this.showLogoutConfirm = false;
+    this.iptvApi.clearCredentials();
     this.router.navigate(['/login']);
   }
 
