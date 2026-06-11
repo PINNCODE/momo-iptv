@@ -46,6 +46,7 @@ export class TvPlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoading = true;
   hasError = false;
   hasChannel = false;
+  currentChannel: any = null;
 
   // EPG
   currentEpg: EpgEntry | null = null;
@@ -61,17 +62,33 @@ export class TvPlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.channelSub = this.iptvApi.currentChannel$.subscribe(channel => {
-      if (channel) {
-        this.hasChannel = true;
-        this.loadChannel(channel);
-      } else {
-        this.hasChannel = false;
-      }
-    });
+    const savedVolume = localStorage.getItem('iptv_volume');
+    const savedMuted = localStorage.getItem('iptv_muted');
+    if (savedVolume !== null) {
+      this.volume = parseFloat(savedVolume);
+    }
+    if (savedMuted !== null) {
+      this.isMuted = savedMuted === 'true';
+    }
   }
 
   ngAfterViewInit(): void {
+    const video = this.videoRef.nativeElement;
+    video.volume = this.volume;
+    video.muted = this.isMuted;
+
+    this.channelSub = this.iptvApi.currentChannel$.subscribe(channel => {
+      setTimeout(() => {
+        this.currentChannel = channel;
+        if (channel) {
+          this.hasChannel = true;
+          this.loadChannel(channel);
+        } else {
+          this.hasChannel = false;
+        }
+      });
+    });
+
     Promise.resolve().then(() => {
       this.initMouseIdleDetection();
     });
@@ -126,11 +143,14 @@ export class TvPlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
         this.ngZone.run(() => {
           this.isLoading = false;
+          this.cdr.detectChanges();
           video.play().then(() => {
             this.isPlaying = true;
+            this.cdr.detectChanges();
           }).catch(() => {
             // Autoplay blocked — user must click play
             this.isPlaying = false;
+            this.cdr.detectChanges();
           });
         });
       });
@@ -140,6 +160,7 @@ export class TvPlayerComponent implements OnInit, AfterViewInit, OnDestroy {
           this.ngZone.run(() => {
             this.hasError = true;
             this.isLoading = false;
+            this.cdr.detectChanges();
           });
         }
       });
@@ -148,9 +169,15 @@ export class TvPlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       // Safari native HLS
       video.src = url;
       video.addEventListener('loadedmetadata', () => {
-        this.ngZone.run(() => { this.isLoading = false; });
+        this.ngZone.run(() => { 
+          this.isLoading = false; 
+          this.cdr.detectChanges();
+        });
         video.play()
-          .then(() => this.ngZone.run(() => (this.isPlaying = true)))
+          .then(() => this.ngZone.run(() => {
+            this.isPlaying = true;
+            this.cdr.detectChanges();
+          }))
           .catch(() => {});
       });
 
@@ -158,11 +185,21 @@ export class TvPlayerComponent implements OnInit, AfterViewInit, OnDestroy {
       this.ngZone.run(() => {
         this.hasError = true;
         this.isLoading = false;
+        this.cdr.detectChanges();
       });
     }
 
-    video.addEventListener('waiting', () => this.ngZone.run(() => (this.isLoading = true)));
-    video.addEventListener('playing', () => this.ngZone.run(() => (this.isLoading = false)));
+    video.volume = this.volume;
+    video.muted = this.isMuted;
+
+    video.addEventListener('waiting', () => this.ngZone.run(() => {
+      this.isLoading = true;
+      this.cdr.detectChanges();
+    }));
+    video.addEventListener('playing', () => this.ngZone.run(() => {
+      this.isLoading = false;
+      this.cdr.detectChanges();
+    }));
   }
 
   // ─── Controls ────────────────────────────────────────────────────────────────
@@ -184,6 +221,7 @@ export class TvPlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     const video = this.videoRef.nativeElement;
     this.isMuted = !this.isMuted;
     video.muted = this.isMuted;
+    this.saveVolumeState();
     this.scheduleHide();
   }
 
@@ -194,7 +232,13 @@ export class TvPlayerComponent implements OnInit, AfterViewInit, OnDestroy {
     video.volume = this.volume;
     this.isMuted = this.volume === 0;
     video.muted = this.isMuted;
+    this.saveVolumeState();
     this.scheduleHide();
+  }
+
+  private saveVolumeState(): void {
+    localStorage.setItem('iptv_volume', this.volume.toString());
+    localStorage.setItem('iptv_muted', this.isMuted.toString());
   }
 
   // ─── Controls visibility ─────────────────────────────────────────────────────
