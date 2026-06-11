@@ -2,24 +2,15 @@
 <app-tv-player></app-tv-player>
 
 <!-- ── Sidebar floating overlay ────────────────────────────────────────── -->
-<div class="sidebar-overlay">
+<div class="sidebar-overlay" [class.sidebar-hidden]="!sidebarVisible" (mouseenter)="onSidebarHover(true)" (mouseleave)="onSidebarHover(false)">
     <app-sidebar [activeView]="currentView" (onMenuSelect)="changeView($event)" (onLogout)="openLogoutConfirm()"></app-sidebar>
 </div>
 
 <!-- ── Secondary panel overlay (TV guide / Search / Profile) ───────────── -->
-<div class="panel-overlay" *ngIf="currentView !== 'home'" (click)="closePanel($event)">
-    <div class="panel-content" (click)="$event.stopPropagation()">
-        <app-tv-view *ngIf="currentView === 'tv'" class="w-full h-full block"></app-tv-view>
-        <app-search-view *ngIf="currentView === 'search'" class="w-full h-full block"></app-search-view>
-        <app-profile-view *ngIf="currentView === 'profile'" class="w-full h-full block"></app-profile-view>
-
-        <!-- Close button -->
-        <button class="panel-close-btn" (click)="changeView(currentView)" aria-label="Cerrar panel">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-        </button>
-    </div>
+<div class="panel-overlay" [class.full-width-panel]="!sidebarVisible" *ngIf="currentView !== 'home'" (click)="closePanel($event)" (mouseenter)="onPanelHover(true)" (mouseleave)="onPanelHover(false)">
+    <app-tv-view *ngIf="currentView === 'tv'" (click)="$event.stopPropagation()" class="w-full h-full block"></app-tv-view>
+    <app-search-view *ngIf="currentView === 'search'" (click)="$event.stopPropagation()" class="w-full h-full block"></app-search-view>
+    <app-profile-view *ngIf="currentView === 'profile'" (click)="$event.stopPropagation()" class="w-full h-full block"></app-profile-view>
 </div>
 
 <!-- ── Logout confirmation modal ───────────────────────────────────────── -->
