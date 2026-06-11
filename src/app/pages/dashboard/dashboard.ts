@@ -20,7 +20,11 @@ export class Dashboard {
   constructor(private router: Router) {}
 
   changeView(view: string) {
-    this.currentView = view;
+    if (this.currentView === view) {
+      this.currentView = 'home';
+    } else {
+      this.currentView = view;
+    }
   }
 
   openLogoutConfirm() {
