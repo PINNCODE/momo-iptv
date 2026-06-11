@@ -53,10 +53,10 @@ interface GroupedChannels {
             <div class="space-y-2">
               <div *ngFor="let channel of group.channels"
                    (click)="selectChannel(channel)"
-                   class="w-full text-left p-4 rounded-xl transition-all duration-200 group flex flex-col border cursor-pointer"
+                   class="w-full text-left rounded-xl transition-all duration-200 group flex flex-col border cursor-pointer justify-center px-5"
                    [ngClass]="{
-                     'bg-white/40 dark:bg-white/10 font-bold shadow-inner border border-white/50 dark:border-white/20': selectedChannelId === channel.stream_id,
-                     'bg-white/10 dark:bg-black/10 border-transparent hover:bg-white/20 dark:hover:bg-white/5 hover:border-white/30 dark:hover:border-white/10': selectedChannelId !== channel.stream_id
+                     'bg-white/40 dark:bg-white/10 font-bold shadow-inner border border-white/50 dark:border-white/20 min-h-[80px] h-auto py-4': selectedChannelId === channel.stream_id,
+                     'bg-white/10 dark:bg-black/10 border-transparent hover:bg-white/20 dark:hover:bg-white/5 hover:border-white/30 dark:hover:border-white/10 h-20': selectedChannelId !== channel.stream_id
                    }">
                 
                 <div class="flex items-center space-x-4">
@@ -88,11 +88,20 @@ interface GroupedChannels {
                 
                 <!-- Acciones -->
                 <div class="flex justify-end space-x-2 mt-3" *ngIf="selectedChannelId === channel.stream_id">
-                  <button (click)="viewEpg(channel, $event)" class="px-4 py-1.5 text-xs font-bold rounded-lg bg-white/30 hover:bg-white/50 dark:bg-black/30 dark:hover:bg-black/50 text-white transition-colors backdrop-blur-md border border-white/30 shadow-sm">
-                    Ver EPG
+                  <button (click)="viewEpg(channel, $event)" 
+                          class="p-2 text-xs font-bold rounded-xl bg-white/35 hover:bg-white/55 dark:bg-white/5 dark:hover:bg-white/10 text-white transition-colors backdrop-blur-md border border-white/35 dark:border-white/10 shadow-sm flex items-center justify-center cursor-pointer"
+                          title="Ver Guía EPG">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
                   </button>
-                  <button (click)="playChannel(channel, $event)" class="px-4 py-1.5 text-xs font-bold rounded-lg bg-blue-500/80 hover:bg-blue-500 text-white transition-colors backdrop-blur-md border border-blue-400/50 shadow-md">
-                    Ver Ahora!
+                  <button (click)="playChannel(channel, $event)" 
+                          class="p-2 text-xs font-bold rounded-xl bg-blue-500/85 hover:bg-blue-500 text-white transition-colors backdrop-blur-md border border-blue-400/50 shadow-md flex items-center justify-center cursor-pointer"
+                          title="Ver Canal Ahora">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
                   </button>
                 </div>
               </div>

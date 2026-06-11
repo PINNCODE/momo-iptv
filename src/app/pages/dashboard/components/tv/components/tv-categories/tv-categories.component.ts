@@ -12,17 +12,15 @@ import { CommonModule } from '@angular/common';
       <div class="flex-grow overflow-y-auto pr-2 space-y-1 scrollbar-hide">
         <button *ngFor="let category of categories"
                 (click)="selectCategory(category)"
-                class="w-full text-left p-4 rounded-xl transition-all duration-200 group"
+                class="w-full text-left h-20 px-5 rounded-xl transition-all duration-200 group flex items-center justify-between"
                 [ngClass]="{
                   'bg-white/40 dark:bg-white/10 text-white font-bold shadow-inner border border-white/50 dark:border-white/20': selectedCategoryId === category.category_id,
                   'text-gray-800 dark:text-gray-200 hover:bg-white/20 dark:hover:bg-white/5 border border-transparent': selectedCategoryId !== category.category_id
                 }">
-          <div class="flex items-center justify-between">
-            <span class="truncate" [ngClass]="{'drop-shadow-md': selectedCategoryId === category.category_id}">{{ category.category_name }}</span>
-            <svg *ngIf="selectedCategoryId === category.category_id" class="w-5 h-5 text-white drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-            </svg>
-          </div>
+          <span class="truncate" [ngClass]="{'drop-shadow-md': selectedCategoryId === category.category_id}">{{ category.category_name }}</span>
+          <svg *ngIf="selectedCategoryId === category.category_id" class="w-5 h-5 text-white drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+          </svg>
         </button>
       </div>
     </div>
