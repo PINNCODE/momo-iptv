@@ -1,5 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { IptvApiService } from '../../../../services/iptv-api.service';
 
 @Component({
   selector: 'app-profile-view',
@@ -41,7 +42,7 @@ import { CommonModule } from '@angular/common';
               </div>
               <div>
                 <p class="text-[10px] uppercase tracking-wider text-gray-600 dark:text-white/50 font-bold">Fecha de Expiración</p>
-                <p class="text-gray-900 dark:text-white text-base font-semibold mt-0.5">{{ userInfo.exp_date }}</p>
+                <p class="text-gray-900 dark:text-white text-base font-semibold mt-0.5">{{ formatExpDate(userInfo.exp_date) }}</p>
               </div>
             </div>
             
@@ -58,10 +59,10 @@ import { CommonModule } from '@angular/common';
                     <p class="text-[10px] uppercase tracking-wider text-gray-600 dark:text-white/50 font-bold">Dispositivos / Conexiones</p>
                   </div>
                 </div>
-                <span class="text-gray-900 dark:text-white text-sm font-bold">{{ userInfo.active_cons }} / {{ userInfo.max_connections }}</span>
+                <span class="text-gray-900 dark:text-white text-sm font-bold">{{ userInfo.active_cons || 0 }} / {{ userInfo.max_connections || 0 }}</span>
               </div>
               <div class="w-full bg-black/10 dark:bg-white/10 rounded-full h-2 shadow-inner overflow-hidden">
-                <div class="bg-gradient-to-r from-blue-500 to-indigo-500 dark:from-blue-400 dark:to-indigo-400 h-full rounded-full transition-all duration-1000 ease-out" [style.width.%]="(userInfo.active_cons / userInfo.max_connections) * 100"></div>
+                <div class="bg-gradient-to-r from-blue-500 to-indigo-500 dark:from-blue-400 dark:to-indigo-400 h-full rounded-full transition-all duration-1000 ease-out" [style.width.%]="getConnectionPercentage()"></div>
               </div>
             </div>
           </div>
@@ -79,7 +80,7 @@ import { CommonModule } from '@angular/common';
               </div>
               <div class="min-w-0 flex-1">
                 <p class="text-[10px] uppercase tracking-wider text-gray-600 dark:text-white/50 font-bold">Servidor Principal</p>
-                <p class="text-gray-900 dark:text-white text-sm font-semibold mt-0.5 truncate">{{ serverInfo.server_protocol }}://{{ serverInfo.url }}:{{ serverInfo.port }}</p>
+                <p class="text-gray-900 dark:text-white text-sm font-semibold mt-0.5 truncate">{{ serverInfo.url }}</p>
               </div>
             </div>
             
@@ -92,7 +93,7 @@ import { CommonModule } from '@angular/common';
               </div>
               <div>
                 <p class="text-[10px] uppercase tracking-wider text-gray-600 dark:text-white/50 font-bold">Zona Horaria</p>
-                <p class="text-gray-900 dark:text-white text-sm font-semibold mt-0.5">{{ serverInfo.timezone }}</p>
+                <p class="text-gray-900 dark:text-white text-sm font-semibold mt-0.5">{{ serverInfo.timezone || 'Desconocida' }}</p>
               </div>
             </div>
           </div>
@@ -113,20 +114,55 @@ import { CommonModule } from '@angular/common';
   `]
 })
 export class ProfileViewComponent {
-  @Input() userInitials: string = 'JD';
+  @Input() userInitials: string = '';
 
-  userInfo = {
-    status: 'Active',
-    exp_date: '31 Diciembre 2026',
-    active_cons: 2,
-    max_connections: 3,
+  userInfo: any = {
+    status: 'Unknown',
+    exp_date: 'N/A',
+    active_cons: 0,
+    max_connections: 0,
     is_trial: 'false'
   };
 
-  serverInfo = {
-    url: 'tv.momo-iptv.com',
-    port: '8080',
+  serverInfo: any = {
+    url: 'N/A',
+    port: 'N/A',
     server_protocol: 'http',
-    timezone: 'America/Mexico_City'
+    timezone: 'N/A'
   };
+
+  constructor(private iptvApi: IptvApiService) {
+    effect(() => {
+      const profile = this.iptvApi.profileInfo();
+      if (profile) {
+        if (profile.userInfo) {
+          this.userInfo = { ...this.userInfo, ...profile.userInfo };
+          if (!this.userInitials && profile.userInfo.username) {
+            this.userInitials = profile.userInfo.username.substring(0, 2).toUpperCase();
+          }
+        }
+        if (profile.serverInfo) {
+          this.serverInfo = { ...this.serverInfo, ...profile.serverInfo };
+        }
+      }
+    });
+  }
+
+  formatExpDate(exp_date: string | number | undefined): string {
+    if (!exp_date) return 'N/A';
+    // If it's numeric (Unix timestamp in seconds)
+    if (!isNaN(Number(exp_date))) {
+      const date = new Date(Number(exp_date) * 1000);
+      return date.toLocaleDateString('es-MX', {
+        year: 'numeric', month: 'long', day: 'numeric'
+      });
+    }
+    return String(exp_date);
+  }
+
+  getConnectionPercentage(): number {
+    const active = Number(this.userInfo.active_cons) || 0;
+    const max = Number(this.userInfo.max_connections) || 1;
+    return Math.min((active / max) * 100, 100);
+  }
 }

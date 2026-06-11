@@ -19,6 +19,10 @@ export class IptvApiService {
   // State for credentials using Signals
   public credentials = signal<IptvCredentials | null>(null);
 
+  // State for user and server info
+  private profileInfoKey = 'iptv_profile_info';
+  public profileInfo = signal<{userInfo: any, serverInfo: any} | null>(null);
+
   // State for the currently playing channel
   private currentStreamUrlSubject = new BehaviorSubject<string>('');
   public currentStreamUrl$ = this.currentStreamUrlSubject.asObservable();
@@ -28,7 +32,29 @@ export class IptvApiService {
 
   constructor(private http: HttpClient) {
     this.loadCredentials();
+    this.loadProfileInfo();
     this.loadLastChannel();
+  }
+
+  private loadProfileInfo() {
+    const saved = localStorage.getItem(this.profileInfoKey);
+    if (saved) {
+      try {
+        this.profileInfo.set(JSON.parse(saved));
+      } catch (e) {
+        console.error('Failed to parse saved profile info', e);
+      }
+    }
+  }
+
+  public saveProfileInfo(info: {userInfo: any, serverInfo: any}) {
+    localStorage.setItem(this.profileInfoKey, JSON.stringify(info));
+    this.profileInfo.set(info);
+  }
+
+  public clearProfileInfo() {
+    localStorage.removeItem(this.profileInfoKey);
+    this.profileInfo.set(null);
   }
 
   private loadLastChannel() {
@@ -76,6 +102,9 @@ export class IptvApiService {
   public clearCredentials() {
     localStorage.removeItem(this.credentialsKey);
     this.credentials.set(null);
+    this.clearProfileInfo();
+    localStorage.removeItem(this.lastChannelKey);
+    this.currentChannelSubject.next(null);
   }
 
   private getBaseUrl(): string {
@@ -111,6 +140,7 @@ export class IptvApiService {
         // Typically the API returns user_info on success
         if (response && response.user_info) {
           this.saveCredentials({ serverUrl: formattedUrl, username, password });
+          this.saveProfileInfo({ userInfo: response.user_info, serverInfo: response.server_info });
         } else {
           throw new Error('Invalid credentials');
         }
