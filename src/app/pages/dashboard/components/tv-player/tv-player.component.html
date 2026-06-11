@@ -1,5 +1,5 @@
 <!-- Full-screen player wrapper -->
-<div class="player-root">
+<div class="player-root" [class.has-channel]="hasChannel">
 
   <!-- Video element: click on video toggles play -->
   <video #videoEl class="player-video" [class.hidden]="!hasChannel" playsinline (click)="togglePlay()"></video>
@@ -30,7 +30,7 @@
     <!-- Top-left: channel title (click through to video below) -->
     <div class="top-bar" (click)="$event.stopPropagation()">
       <div class="live-badge">EN VIVO</div>
-      <span class="channel-title">{{ currentEpg?.title ?? 'Canal en vivo' }}</span>
+      <span class="channel-title">{{ currentEpg?.title ?? currentChannel?.name ?? 'Canal en vivo' }}</span>
     </div>
 
     <!-- Transparent click area that forwards clicks to the video (toggle play) -->
