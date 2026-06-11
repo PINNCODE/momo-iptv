@@ -121,7 +121,7 @@
 .top-bar {
   position: absolute;
   top: 1.5rem;
-  left: calc(5rem + 2.5rem); /* clear the sidebar pill */
+  left: calc(5rem + 2rem); /* clear the sidebar pill */
   width: fit-content;
   max-width: calc(100% - (5rem + 4rem));
   display: flex;
@@ -176,7 +176,7 @@
   position: absolute;
   bottom: 1.75rem;
   left: calc(5rem + 2rem);
-  right: 1.75rem;
+  right: calc(5rem + 2rem);
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
