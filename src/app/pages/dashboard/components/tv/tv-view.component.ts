@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
 import { TvCategoriesComponent } from './components/tv-categories/tv-categories.component';
 import { TvChannelsComponent } from './components/tv-channels/tv-channels.component';
 import { TvEpgComponent } from './components/tv-epg/tv-epg.component';
@@ -50,13 +51,15 @@ import { IptvApiService } from '../../../../services/iptv-api.service';
     }
   `]
 })
-export class TvViewComponent implements OnInit {
+export class TvViewComponent implements OnInit, OnDestroy {
   categories: any[] = [];
   currentChannels: any[] = [];
   currentEpg: any[] | null = null;
 
   selectedCategoryId: string | null = null;
   selectedChannelId: number | null = null;
+  
+  private channelSub: Subscription | null = null;
 
   constructor(private iptvApi: IptvApiService) {}
 
@@ -67,6 +70,40 @@ export class TvViewComponent implements OnInit {
       },
       error: (err) => console.error('Failed to load categories', err)
     });
+
+    this.channelSub = this.iptvApi.currentChannel$.subscribe(channel => {
+      if (channel) {
+        if (this.selectedCategoryId !== channel.category_id) {
+          this.selectedCategoryId = channel.category_id;
+          this.iptvApi.getLiveStreams(channel.category_id).subscribe({
+            next: (data) => {
+              this.currentChannels = data;
+            },
+            error: (err) => console.error('Failed to load streams', err)
+          });
+        }
+        
+        if (this.selectedChannelId !== channel.stream_id) {
+          this.selectedChannelId = channel.stream_id;
+          this.iptvApi.getShortEpg(channel.stream_id).subscribe({
+            next: (data) => {
+              if (data && data.epg_listings) {
+                this.currentEpg = data.epg_listings;
+              } else {
+                this.currentEpg = null;
+              }
+            },
+            error: (err) => console.error('Failed to load EPG', err)
+          });
+        }
+      }
+    });
+  }
+
+  ngOnDestroy() {
+    if (this.channelSub) {
+      this.channelSub.unsubscribe();
+    }
   }
 
   onCategorySelected(category: any) {
