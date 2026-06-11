@@ -9,6 +9,7 @@
     <div class="flex-grow h-full ml-6 overflow-hidden">
         <app-tv-view *ngIf="currentView === 'tv'" class="w-full h-full block"></app-tv-view>
         <app-search-view *ngIf="currentView === 'search'" class="w-full h-full block"></app-search-view>
+        <app-profile-view *ngIf="currentView === 'profile'" class="w-full h-full block"></app-profile-view>
         
         <div *ngIf="currentView === 'home'" class="w-full h-full flex items-center justify-center text-white/50 text-2xl font-light tracking-wider animate-fade-in">
             Selecciona una opción en el menú

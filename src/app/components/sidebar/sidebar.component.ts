@@ -13,29 +13,6 @@ export class SidebarComponent {
   @Input() activeView: string = 'home';
   @Output() onMenuSelect = new EventEmitter<string>();
 
-  isProfileOpen: boolean = false;
-
-  // Datos mockeados basados en la estructura JSON proporcionada por el usuario
-  // Solo exponemos información no sensible en el popover
-  userInfo = {
-    status: 'Active',
-    exp_date: '31 Diciembre 2026',
-    active_cons: 2,
-    max_connections: 3,
-    is_trial: 'false'
-  };
-
-  serverInfo = {
-    url: 'tv.momo-iptv.com',
-    port: '8080',
-    server_protocol: 'http',
-    timezone: 'America/Mexico_City'
-  };
-
-  toggleProfile() {
-    this.isProfileOpen = !this.isProfileOpen;
-  }
-
   selectMenu(view: string) {
     this.onMenuSelect.emit(view);
   }
