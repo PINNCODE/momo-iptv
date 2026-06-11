@@ -2,10 +2,15 @@
 <div class="player-root">
 
   <!-- Video element: click on video toggles play -->
-  <video #videoEl class="player-video" playsinline (click)="togglePlay()"></video>
+  <video #videoEl class="player-video" [class.hidden]="!hasChannel" playsinline (click)="togglePlay()"></video>
+
+  <!-- Default background video if no channel is selected -->
+  <video *ngIf="!hasChannel" autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-cover z-0 pointer-events-none">
+      <source src="/background-loop.mp4" type="video/mp4">
+  </video>
 
   <!-- Loading spinner -->
-  <div class="player-loading" *ngIf="isLoading && !hasError">
+  <div class="player-loading" *ngIf="isLoading && !hasError && hasChannel">
     <div class="spinner"></div>
   </div>
 
@@ -20,7 +25,7 @@
   </div>
 
   <!-- Controls overlay (auto-hide) -->
-  <div class="controls-overlay" [class.visible]="controlsVisible">
+  <div class="controls-overlay" [class.visible]="controlsVisible && hasChannel">
 
     <!-- Top-left: channel title (click through to video below) -->
     <div class="top-bar" (click)="$event.stopPropagation()">

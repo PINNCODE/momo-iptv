@@ -11,8 +11,8 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import Hls from 'hls.js';
-import { StreamService } from '../../../../services/stream.service';
-import { TV_MOCK_DATA } from '../tv/tv-mock-data';
+import { IptvApiService } from '../../../../services/iptv-api.service';
+import { Subscription } from 'rxjs';
 
 interface EpgEntry {
   id: string;
@@ -45,39 +45,74 @@ export class TvPlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   controlsVisible = false;
   isLoading = true;
   hasError = false;
+  hasChannel = false;
 
   // EPG
   currentEpg: EpgEntry | null = null;
   upcomingEpg: EpgEntry[] = [];
 
+  private channelSub: Subscription | null = null;
+
   constructor(
-    private streamService: StreamService,
+    private iptvApi: IptvApiService,
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef,
     private hostRef: ElementRef<HTMLElement>
   ) {}
 
   ngOnInit(): void {
-    this.loadEpg();
+    this.channelSub = this.iptvApi.currentChannel$.subscribe(channel => {
+      if (channel) {
+        this.hasChannel = true;
+        this.loadChannel(channel);
+      } else {
+        this.hasChannel = false;
+      }
+    });
   }
 
   ngAfterViewInit(): void {
     Promise.resolve().then(() => {
-      this.initPlayer();
       this.initMouseIdleDetection();
     });
   }
 
-  private loadEpg(): void {
-    const listings = TV_MOCK_DATA.epg.epg_listings as EpgEntry[];
-    this.currentEpg = listings.find((e) => e.now_playing === 1) ?? listings[0] ?? null;
-    const currentIdx = this.currentEpg ? listings.indexOf(this.currentEpg) : -1;
-    this.upcomingEpg = listings.slice(currentIdx + 1, currentIdx + 4);
+  private loadChannel(channel: any): void {
+    const url = this.iptvApi.getStreamUrl(channel.stream_id);
+    this.loadEpg(channel.stream_id);
+    this.initPlayer(url);
   }
 
-  private initPlayer(): void {
+  private loadEpg(streamId: number): void {
+    this.iptvApi.getShortEpg(streamId).subscribe({
+      next: (data) => {
+        if (data && data.epg_listings) {
+          const listings = data.epg_listings as EpgEntry[];
+          this.currentEpg = listings.find((e) => e.now_playing === 1) ?? listings[0] ?? null;
+          const currentIdx = this.currentEpg ? listings.indexOf(this.currentEpg) : -1;
+          this.upcomingEpg = listings.slice(currentIdx + 1, currentIdx + 4);
+          this.cdr.markForCheck();
+        } else {
+          this.currentEpg = null;
+          this.upcomingEpg = [];
+          this.cdr.markForCheck();
+        }
+      },
+      error: () => {
+        this.currentEpg = null;
+        this.upcomingEpg = [];
+        this.cdr.markForCheck();
+      }
+    });
+  }
+
+  private initPlayer(url: string): void {
     const video = this.videoRef.nativeElement;
-    const url = this.streamService.getStreamUrl();
+
+    if (this.hls) {
+      this.hls.destroy();
+      this.hls = null;
+    }
 
     if (Hls.isSupported()) {
       this.hls = new Hls({
@@ -236,6 +271,9 @@ export class TvPlayerComponent implements OnInit, AfterViewInit, OnDestroy {
   // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
   ngOnDestroy(): void {
+    if (this.channelSub) {
+      this.channelSub.unsubscribe();
+    }
     if (this.hls) {
       this.hls.destroy();
       this.hls = null;

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TvCategoriesComponent } from './components/tv-categories/tv-categories.component';
 import { TvChannelsComponent } from './components/tv-channels/tv-channels.component';
 import { TvEpgComponent } from './components/tv-epg/tv-epg.component';
-import { TV_MOCK_DATA } from './tv-mock-data';
+import { IptvApiService } from '../../../../services/iptv-api.service';
 
 @Component({
   selector: 'app-tv-view',
@@ -58,19 +58,27 @@ export class TvViewComponent implements OnInit {
   selectedCategoryId: string | null = null;
   selectedChannelId: number | null = null;
 
+  constructor(private iptvApi: IptvApiService) {}
+
   ngOnInit() {
-    // Load mock data
-    this.categories = TV_MOCK_DATA.categories;
+    this.iptvApi.getCategories().subscribe({
+      next: (data) => {
+        this.categories = data;
+      },
+      error: (err) => console.error('Failed to load categories', err)
+    });
   }
 
   onCategorySelected(category: any) {
     this.selectedCategoryId = category.category_id;
     
-    // Filtramos los canales usando los datos mockeados
-    // En el futuro esto sería una llamada al backend
-    this.currentChannels = TV_MOCK_DATA.channels.filter(c => c.category_id === category.category_id);
+    this.iptvApi.getLiveStreams(category.category_id).subscribe({
+      next: (data) => {
+        this.currentChannels = data;
+      },
+      error: (err) => console.error('Failed to load streams', err)
+    });
     
-    // Reseteamos el canal seleccionado y la guía
     this.selectedChannelId = null;
     this.currentEpg = null;
   }
@@ -78,13 +86,20 @@ export class TvViewComponent implements OnInit {
   onChannelSelected(channel: any) {
     this.selectedChannelId = channel.stream_id;
     
-    // Obtenemos la EPG simulada
-    // En el futuro esto sería una llamada al backend con el channel.stream_id o epg_channel_id
-    this.currentEpg = TV_MOCK_DATA.epg.epg_listings;
+    this.iptvApi.getShortEpg(channel.stream_id).subscribe({
+      next: (data) => {
+        if (data && data.epg_listings) {
+          this.currentEpg = data.epg_listings;
+        } else {
+          this.currentEpg = null;
+        }
+      },
+      error: (err) => console.error('Failed to load EPG', err)
+    });
   }
 
   onPlayRequested(channel: any) {
-    // Aquí podemos emitir un evento para abrir el reproductor global
+    this.iptvApi.playChannel(channel);
     console.log('TvView: Solicitud de reproducción para', channel.name);
   }
 }

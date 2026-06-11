@@ -53,9 +53,13 @@
                     </div>
                 </div>
                 
+                <div *ngIf="errorMessage()" class="px-2 mb-4 text-sm text-red-500 dark:text-red-400 font-medium text-center">
+                    {{ errorMessage() }}
+                </div>
+                
                 <div class="pt-2">
-                    <app-glass-button type="submit" [disabled]="loginForm.invalid">
-                        Iniciar sesión
+                    <app-glass-button type="submit" [disabled]="loginForm.invalid || isLoading()">
+                        {{ isLoading() ? 'Iniciando sesión...' : 'Iniciar sesión' }}
                     </app-glass-button>
                 </div>
             </form>

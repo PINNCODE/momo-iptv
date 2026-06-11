@@ -1,11 +1,13 @@
 import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { SidebarComponent } from '../../components/sidebar/sidebar.component';
 import { TvViewComponent } from './components/tv/tv-view.component';
 import { SearchViewComponent } from './components/search/search-view.component';
 import { ProfileViewComponent } from './components/profile/profile-view.component';
 import { TvPlayerComponent } from './components/tv-player/tv-player.component';
+import { IptvApiService } from '../../services/iptv-api.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -22,20 +24,33 @@ export class Dashboard implements OnInit, OnDestroy {
   private hideTimer: any = null;
   private isHovered: boolean = false;
   private isPanelHovered: boolean = false;
+  private hasChannel: boolean = false;
+  private channelSub: Subscription | null = null;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private iptvApi: IptvApiService) {}
 
   ngOnInit(): void {
+    this.channelSub = this.iptvApi.currentChannel$.subscribe(channel => {
+      this.hasChannel = !!channel;
+      if (!this.hasChannel) {
+        this.cancelHideTimer();
+        this.sidebarVisible = true;
+      } else {
+        this.resetHideTimer();
+      }
+    });
     this.resetHideTimer();
   }
 
   ngOnDestroy(): void {
+    if (this.channelSub) {
+      this.channelSub.unsubscribe();
+    }
     this.cancelHideTimer();
   }
 
   @HostListener('document:keydown', ['$event'])
   onKeyDown(event: KeyboardEvent): void {
-    // Escape closes any open panel or modal
     if (event.key === 'Escape') {
       if (this.showLogoutConfirm) {
         this.closeLogoutConfirm();
@@ -44,7 +59,6 @@ export class Dashboard implements OnInit, OnDestroy {
       }
     }
 
-    // Toggle sidebar on 'M' / 'm' key press (outside of inputs/textareas)
     if (event.key === 'm' || event.key === 'M') {
       const activeEl = document.activeElement;
       if (activeEl) {
@@ -55,7 +69,6 @@ export class Dashboard implements OnInit, OnDestroy {
         const isEditable = activeEl.hasAttribute('contenteditable') || activeEl.getAttribute('contenteditable') === 'true';
 
         if (isInput || isTextarea || isEditable) {
-          // User is typing, do not toggle sidebar
           return;
         }
       }
@@ -67,7 +80,7 @@ export class Dashboard implements OnInit, OnDestroy {
   @HostListener('document:mousemove', ['$event'])
   onMouseMove(event: MouseEvent): void {
     const baseFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-    const threshold = baseFontSize * 5; // 5rem proximity threshold
+    const threshold = baseFontSize * 5;
     if (event.clientX < threshold) {
       if (!this.sidebarVisible) {
         this.sidebarVisible = true;
@@ -79,7 +92,7 @@ export class Dashboard implements OnInit, OnDestroy {
   toggleSidebar() {
     this.sidebarVisible = !this.sidebarVisible;
     if (!this.sidebarVisible) {
-      this.currentView = 'home'; // Hide panel as well when sidebar is hidden
+      this.currentView = 'home';
       this.cancelHideTimer();
     } else {
       this.resetHideTimer();
@@ -92,7 +105,7 @@ export class Dashboard implements OnInit, OnDestroy {
     } else {
       this.currentView = view;
     }
-    this.sidebarVisible = true; // Show sidebar when selecting a view
+    this.sidebarVisible = true;
     this.resetHideTimer();
   }
 
@@ -116,8 +129,6 @@ export class Dashboard implements OnInit, OnDestroy {
     this.router.navigate(['/login']);
   }
 
-  // ─── Hide Timers ──────────────────────────────────────────────────────────
-
   onSidebarHover(hovering: boolean) {
     this.isHovered = hovering;
     if (hovering) {
@@ -138,6 +149,8 @@ export class Dashboard implements OnInit, OnDestroy {
 
   resetHideTimer() {
     this.cancelHideTimer();
+    if (!this.hasChannel) return; // Prevent hiding if no channel is selected
+    
     if (this.sidebarVisible && !this.isHovered && !this.isPanelHovered && !this.showLogoutConfirm) {
       this.hideTimer = setTimeout(() => {
         this.sidebarVisible = false;
