@@ -8,12 +8,15 @@ import { CommonModule } from '@angular/common';
   templateUrl: './sidebar.component.html'
 })
 export class SidebarComponent {
-  // Input para poder cambiar las iniciales del usuario desde el componente padre
-  @Input() userInitials: string = 'U';
   @Input() activeView: string = 'home';
   @Output() onMenuSelect = new EventEmitter<string>();
+  @Output() onLogout = new EventEmitter<void>();
 
   selectMenu(view: string) {
     this.onMenuSelect.emit(view);
+  }
+
+  logoutRequested() {
+    this.onLogout.emit();
   }
 }
