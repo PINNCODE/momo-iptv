@@ -15,16 +15,10 @@ import { CommonModule, DatePipe } from '@angular/common';
           Selecciona un canal para ver la guía
         </div>
 
-        <div *ngIf="epgData && epgData.length > 0" class="relative">
-          <!-- Línea vertical del timeline -->
-          <div class="absolute top-0 bottom-0 left-6 w-px bg-gray-200 dark:bg-gray-700"></div>
+        <div *ngIf="epgData && epgData.length > 0">
           
           <div class="space-y-6">
-            <div *ngFor="let program of epgData; let i = index" class="relative pl-14">
-              <!-- Indicador de timeline -->
-              <div class="absolute left-4 top-1.5 w-4 h-4 rounded-full border-4 border-white dark:border-black/50 shadow-sm z-10"
-                   [ngClass]="program.now_playing === 1 ? 'bg-white shadow-[0_0_10px_rgba(255,255,255,0.8)] animate-pulse' : 'bg-gray-300 dark:bg-gray-600'">
-              </div>
+            <div *ngFor="let program of epgData; let i = index">
               
               <div class="bg-white/40 dark:bg-black/20 backdrop-blur-md rounded-xl p-4 shadow-sm border"
                    [ngClass]="program.now_playing === 1 ? 'border-white dark:border-white/50 shadow-[0_4px_16px_rgba(255,255,255,0.2)]' : 'border-white/50 dark:border-white/10'">
